@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../brain/memory.dart';
+import 'settings.dart';
 
 class ChatTurn {
   final bool fromUser;
@@ -10,14 +11,21 @@ class ChatTurn {
   const ChatTurn(this.fromUser, this.text);
 }
 
-/// Opsyonal na Online Mode: ginagamit ang Claude API para sa mga tanong
-/// na hindi alam ng offline na utak. Kailangan ng sariling API key.
+/// Opsyonal na Online Mode para sa mga tanong na hindi alam ng offline na utak.
+/// Dalawang pagpipilian:
+///  - Google Gemini (LIBRE, kailangan lang ng libreng key mula sa aistudio.google.com)
+///  - Claude (may bayad, mula sa console.anthropic.com)
 class OnlineBrain {
-  String apiKey;
-  String model;
-  OnlineBrain({required this.apiKey, this.model = 'claude-opus-5-5'});
+  final Settings settings;
+  OnlineBrain(this.settings);
 
-  bool get enabled => apiKey.trim().isNotEmpty;
+  bool get _useGemini => settings.provider == 'gemini';
+  String get _key => (_useGemini ? settings.geminiKey : settings.apiKey).trim();
+  bool get enabled => _key.isNotEmpty;
+
+  // Sinusubukan isa-isa: ang "latest" alias muna, tapos mga stable na model.
+  static const _geminiModels = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.5-flash-lite'];
+  String? _workingGeminiModel;
 
   String _system(Memory m) => '''
 Ikaw si Maxine, isang mabait at masayahing kaibigan sa isang app.
@@ -46,7 +54,61 @@ Tungkol sa kausap mo: pangalan ay ${m.displayName}${m.interests.isEmpty ? '' : '
       }
     }
     if (msgs.isEmpty || msgs.last['role'] != 'user') return null;
+    if (_useGemini) return _gemini(msgs, memory);
+    return _claude(msgs, memory);
+  }
 
+  Future<String?> _gemini(List<Map<String, String>> msgs, Memory memory) async {
+    final body = jsonEncode({
+      'systemInstruction': {
+        'parts': [
+          {'text': _system(memory)}
+        ]
+      },
+      'contents': [
+        for (final m in msgs)
+          {
+            'role': m['role'] == 'assistant' ? 'model' : 'user',
+            'parts': [
+              {'text': m['content']}
+            ]
+          }
+      ],
+      'generationConfig': {'maxOutputTokens': 2048},
+    });
+    final models = [?_workingGeminiModel, ..._geminiModels];
+    for (final model in models.toSet()) {
+      try {
+        final res = await http
+            .post(
+              Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent'),
+              headers: {'content-type': 'application/json', 'x-goog-api-key': _key},
+              body: body,
+            )
+            .timeout(const Duration(seconds: 25));
+        // 404 = wala ang model na ito, subukan ang susunod
+        if (res.statusCode == 404) continue;
+        if (res.statusCode != 200) return null;
+        final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+        final cands = data['candidates'] as List?;
+        if (cands == null || cands.isEmpty) return null;
+        final parts = (cands.first['content']?['parts'] as List?) ?? const [];
+        final text = parts
+            .where((p) => p is Map && p['text'] is String && p['thought'] != true)
+            .map((p) => p['text'] as String)
+            .join(' ')
+            .trim();
+        _workingGeminiModel = model;
+        return text.isEmpty ? null : text;
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<String?> _claude(List<Map<String, String>> msgs, Memory memory) async {
+    final model = settings.model;
     final body = <String, dynamic>{
       'model': model,
       'max_tokens': 1024,
@@ -67,7 +129,7 @@ Tungkol sa kausap mo: pangalan ay ${m.displayName}${m.interests.isEmpty ? '' : '
             Uri.parse('https://api.anthropic.com/v1/messages'),
             headers: {
               'content-type': 'application/json',
-              'x-api-key': apiKey.trim(),
+              'x-api-key': _key,
               'anthropic-version': '2023-06-01',
               if (isOpus) 'anthropic-beta': 'server-side-fallback-2026-07-01',
               // kailangan kapag tumatakbo sa browser (web build)

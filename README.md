@@ -20,7 +20,7 @@ Gumagana sa: **Android (.apk), Windows, macOS, Linux, iPhone/iPad, at web browse
 | Bugtong, biro, fun facts, breathing exercise | ✅ |
 | Nagsasalita (text-to-speech) gamit ang boses ng device | ✅ |
 | Nakikinig sa boses mo (speech-to-text) | ⚠️ depende sa device (tingnan sa ibaba) |
-| Sumagot sa **kahit anong** tanong | 🌐 Online Mode lang (opsyonal, kailangan ng Claude API key) |
+| Sumagot sa **kahit anong** tanong | 🌐 Online Mode lang (opsyonal: LIBRENG Google Gemini key, o Claude) |
 | Babala at hotline (NCMH 1553) kapag may panganib sa sarili | ✅ |
 
 Ang offline na sagot ay **instant** (mas mabilis pa sa 1 millisecond, nasubukan: 1000 sagot < 1 segundo).
@@ -38,7 +38,7 @@ lib/
   brain/knowledge.dart      – lahat ng sagot, payo, biro, bugtong (madaling i-edit)
   brain/memory.dart         – naaalala (pangalan, hilig, huling mood) – naka-save sa device lang
   services/voice.dart       – boses at pakikinig
-  services/online_brain.dart– opsyonal na Online Mode (Claude API)
+  services/online_brain.dart– opsyonal na Online Mode (Gemini libre, o Claude)
   screens/                  – chat at settings
   widgets/maxine_face.dart  – animated na mukha ni Maxine
 test/brain_test.dart        – mga test ng utak

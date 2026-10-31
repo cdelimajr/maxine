@@ -22,7 +22,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   late final MaxineBrain _brain = MaxineBrain(widget.memory);
-  late final OnlineBrain _online = OnlineBrain(apiKey: widget.settings.apiKey, model: widget.settings.model);
+  late final OnlineBrain _online = OnlineBrain(widget.settings);
   final List<ChatTurn> _turns = [];
   final _input = TextEditingController();
   final _scroll = ScrollController();
@@ -137,9 +137,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => SettingsScreen(settings: widget.settings, memory: widget.memory, voice: widget.voice),
     ));
-    _online
-      ..apiKey = widget.settings.apiKey
-      ..model = widget.settings.model;
     setState(() {});
   }
 

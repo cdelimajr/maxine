@@ -65,6 +65,9 @@ Apple ang may mahigpit na patakaran, kaya **hindi pwedeng direktang i-install an
   - Android at iPhone: gumagana. Para gumana offline, i-download ang offline language pack (Android: *Google app > Settings > Voice > Offline speech recognition*).
   - Mac at web (Chrome/Edge): gumagana pero kadalasan kailangan ng internet.
   - Windows/Linux: maaaring hindi lumabas ang mic button; i-type na lang ang mensahe.
-- **Online Mode (opsyonal):** sa Settings, ilagay ang Claude API key mula sa https://console.anthropic.com para masagot ni Maxine ang halos kahit anong tanong.
-  Ginagamit lang ito kapag hindi alam ng offline na Maxine ang sagot, kaya mabilis pa rin ang karaniwang usapan.
-  May bayad ito batay sa paggamit (maliit lang bawat sagot, pinakamura ang "Haiku" na model sa Settings).
+- **Online Mode (opsyonal, may LIBRENG option):** para masagot ni Maxine ang halos kahit anong tanong.
+  - **Libre: Google Gemini.** Buksan ang https://aistudio.google.com/apikey, mag-login gamit ang Gmail, i-click ang "Create API key", kopyahin,
+    tapos sa app: Settings > Online Mode > piliin ang "Gemini (LIBRE)" > i-paste ang key. Walang credit card na kailangan.
+    May limitasyon ang libre (mga ilang daang tanong bawat araw), sobra-sobra na para sa karaniwang kwentuhan.
+  - **May bayad: Claude**, mula sa https://console.anthropic.com.
+  Ginagamit lang ang Online Mode kapag hindi alam ng offline na Maxine ang sagot, kaya mabilis pa rin ang karaniwang usapan.
