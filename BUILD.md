@@ -9,7 +9,8 @@ May dalawang paraan. **Paraan A** ang pinakamadali (walang kailangang i-install 
 1. Gumawa ng libreng account sa https://github.com at gumawa ng bagong **repository** (hal. `maxine`).
 2. I-upload ang buong laman ng folder na ito sa repository (pwede i-drag and drop sa "Add file > Upload files").
    Siguraduhing kasama ang folder na `.github` (naka-hide minsan; sa Windows, i-on ang "Show hidden items").
-3. Pumunta sa tab na **Actions**. Kusang magsisimula ang "Build Maxine". Hintayin ng mga 10–15 minuto.
+3. **Pinakamadali:** pagkatapos ng mga 10 minuto, buksan ang **Releases** sa kanang bahagi ng repo page (o `github.com/<username>/maxine/releases`). Nandoon ang `Maxine-Android.apk`, `Maxine-Windows.zip`, at iba pa.
+   Alternatibo: pumunta sa tab na **Actions**. Kusang magsisimula ang "Build Maxine". Hintayin ng mga 10–15 minuto.
 4. Buksan ang natapos na run, at sa ibaba sa **Artifacts**, i-download ang:
    - `maxine-android-apk` → may laman na `app-release.apk`
    - `maxine-windows` → buksan ang `maxine.exe`

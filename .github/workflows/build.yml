@@ -74,3 +74,40 @@ jobs:
       - run: flutter build web --release
       - uses: actions/upload-artifact@v4
         with: { name: maxine-web, path: build/web/ }
+
+  # Gumagawa ng GitHub Release (makikita sa "Releases" sa kanan ng repo page)
+  # na may APK, Windows, Mac, Linux, iOS at web, para madaling i-download.
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: [android, windows, macos, ios, linux, web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dl }
+      - name: Ihanda ang mga file
+        run: |
+          mkdir out
+          cp dl/maxine-android-apk/app-release.apk out/Maxine-Android.apk
+          (cd dl/maxine-windows && zip -qr ../../out/Maxine-Windows.zip .)
+          cp dl/maxine-macos/maxine-macos.zip out/Maxine-Mac.zip
+          (cd dl/maxine-linux && zip -qr ../../out/Maxine-Linux.zip .)
+          cp dl/maxine-ios-unsigned/maxine-unsigned.ipa out/Maxine-iOS-unsigned.ipa
+          (cd dl/maxine-web && zip -qr ../../out/Maxine-Web.zip .)
+          ls -la out
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Maxine v1.0.${{ github.run_number }}
+          make_latest: true
+          body: |
+            ## I-download si Maxine
+            - **Android phone:** `Maxine-Android.apk`. Buksan sa phone at payagan ang "Install unknown apps".
+            - **Windows PC:** `Maxine-Windows.zip`. I-unzip, tapos buksan ang `maxine.exe`.
+            - **Mac:** `Maxine-Mac.zip`
+            - **Linux:** `Maxine-Linux.zip`
+            - **iPhone:** `Maxine-iOS-unsigned.ipa` (kailangan pang i-sign, tingnan ang BUILD.md)
+
+            Pagbabago: ${{ github.event.head_commit.message }}
+          files: out/*
