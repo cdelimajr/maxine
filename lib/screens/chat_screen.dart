@@ -6,6 +6,7 @@ import '../brain/maxine_brain.dart';
 import '../brain/memory.dart';
 import '../services/online_brain.dart';
 import '../services/settings.dart';
+import '../services/updater.dart';
 import '../services/voice.dart';
 import '../widgets/maxine_face.dart';
 import 'settings_screen.dart';
@@ -14,7 +15,9 @@ class ChatScreen extends StatefulWidget {
   final Memory memory;
   final Settings settings;
   final Voice voice;
-  const ChatScreen({super.key, required this.memory, required this.settings, required this.voice});
+  final Updater updater;
+  const ChatScreen(
+      {super.key, required this.memory, required this.settings, required this.voice, required this.updater});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -37,6 +40,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _say(_brain.greet()));
+    // Tahimik na pagtingin ng update, pagkatapos makapagsimula ang usapan.
+    Future.delayed(const Duration(seconds: 8), () => widget.updater.check(force: true));
   }
 
   @override
@@ -55,7 +60,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
       _pausedAt = DateTime.now();
       widget.voice.stopSpeaking();
-    } else if (state == AppLifecycleState.resumed && _pausedAt != null) {
+    } else if (state == AppLifecycleState.resumed) {
+      widget.updater.check();
+    }
+    if (state == AppLifecycleState.resumed && _pausedAt != null) {
       if (DateTime.now().difference(_pausedAt!).inMinutes >= 30) _say(_brain.greet());
       _pausedAt = null;
     }
@@ -163,6 +171,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       body: SafeArea(
         child: Column(
           children: [
+            _UpdateBanner(updater: widget.updater),
             const SizedBox(height: 8),
             ValueListenableBuilder<bool>(
               valueListenable: v.speaking,
@@ -284,6 +293,68 @@ class _Bubble extends StatelessWidget {
               style: TextStyle(color: fromUser ? scheme.onPrimary : scheme.onSurface, fontSize: 16, height: 1.35)),
         ),
       ),
+    );
+  }
+}
+
+/// Maliit na banner sa itaas kapag may bagong bersyon. Hindi humaharang sa usapan.
+class _UpdateBanner extends StatelessWidget {
+  final Updater updater;
+  const _UpdateBanner({required this.updater});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return ValueListenableBuilder<UpdateState>(
+      valueListenable: updater.state,
+      builder: (context, st, _) {
+        if (st == UpdateState.none || st == UpdateState.failed) return const SizedBox.shrink();
+        final isWin = Theme.of(context).platform == TargetPlatform.windows;
+        String text;
+        String? action;
+        switch (st) {
+          case UpdateState.available:
+            text = 'May bagong bersyon si Maxine (1.0.${updater.latestBuild})!';
+            action = 'I-update';
+          case UpdateState.downloading:
+            text = 'Dina-download ang bagong bersyon...';
+          case UpdateState.ready:
+            text = isWin
+                ? 'Handa na ang update. Gagamitin ito sa susunod na buksan mo si Maxine.'
+                : 'Ini-install ang update...';
+            action = isWin ? 'I-restart ngayon' : null;
+          default:
+            return const SizedBox.shrink();
+        }
+        return Material(
+          color: scheme.secondaryContainer,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+            child: Row(
+              children: [
+                Icon(Icons.system_update_rounded, size: 18, color: scheme.onSecondaryContainer),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: st == UpdateState.downloading
+                      ? ValueListenableBuilder<double>(
+                          valueListenable: updater.progress,
+                          builder: (_, p, _) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(text, style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer)),
+                              const SizedBox(height: 4),
+                              LinearProgressIndicator(value: p > 0 ? p : null),
+                            ],
+                          ),
+                        )
+                      : Text(text, style: TextStyle(fontSize: 13, color: scheme.onSecondaryContainer)),
+                ),
+                if (action != null) TextButton(onPressed: updater.install, child: Text(action)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

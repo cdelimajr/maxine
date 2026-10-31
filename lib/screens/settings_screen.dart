@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../brain/memory.dart';
 import '../services/settings.dart';
+import '../services/updater.dart';
 import '../services/voice.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -135,6 +136,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
           ),
+          const SizedBox(height: 16),
+          Center(child: Text('Bersyon $appVersion', style: Theme.of(context).textTheme.bodySmall)),
         ],
       ),
     );

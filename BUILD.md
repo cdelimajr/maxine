@@ -72,3 +72,22 @@ Apple ang may mahigpit na patakaran, kaya **hindi pwedeng direktang i-install an
     May limitasyon ang libre (mga ilang daang tanong bawat araw), sobra-sobra na para sa karaniwang kwentuhan.
   - **May bayad: Claude**, mula sa https://console.anthropic.com.
   Ginagamit lang ang Online Mode kapag hindi alam ng offline na Maxine ang sagot, kaya mabilis pa rin ang karaniwang usapan.
+
+---
+
+## Auto-update
+
+Tuwing may bagong push sa `main` na pumasa sa lahat ng test at build, gumagawa ng bagong Release ang GitHub.
+Tinitingnan ito ni Maxine pagbukas ng app (at tuwing babalikan mo ito):
+
+- **Windows:** dina-download nang tahimik sa background. Kapag isinara mo si Maxine, kusang papalitan ang lumang files,
+  kaya bago na siya sa susunod na buksan mo. May "I-restart ngayon" na button kung ayaw mo nang maghintay.
+- **Android:** may lalabas na maliit na banner na "May bagong bersyon". Isang tap sa **I-update**, tapos **Install**.
+  (Hindi pinapayagan ng Android ang tahimik na pag-install ng app na hindi galing sa Play Store, kaya kailangan ng isang tap.)
+  Sa unang beses, hihingin ng phone ang pahintulot na "Install unknown apps" para kay Maxine.
+- **Mac/Linux/iPhone:** bubuksan ng banner ang Releases page.
+
+### Kailangan para sa Android: ang signing key (isang beses lang)
+Para tanggapin ng Android ang bagong APK bilang update, dapat iisang susi ang pumipirma sa lahat.
+Ilagay ang susi bilang GitHub secret: repo > **Settings > Secrets and variables > Actions > New repository secret**,
+pangalan: `MAXINE_KEYSTORE`, laman: ang base64 ng keystore. Huwag itong i-commit sa repo.

@@ -29,11 +29,25 @@ android {
         versionName = flutter.versionName
     }
 
+    // Iisang permanenteng susi para lahat ng bagong APK ay ma-install bilang
+    // update sa ibabaw ng luma (kailangan ng auto-update). Ang susi ay
+    // nanggagaling sa GitHub secret na MAXINE_KEYSTORE (hindi naka-commit).
+    val releaseKey = file("maxine-release.jks")
+    signingConfigs {
+        if (releaseKey.exists()) {
+            create("release") {
+                storeFile = releaseKey
+                storePassword = "maxine-app-2026"
+                keyAlias = "maxine"
+                keyPassword = "maxine-app-2026"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseKey.exists()) signingConfigs.getByName("release")
+                            else signingConfigs.getByName("debug")
         }
     }
 }
